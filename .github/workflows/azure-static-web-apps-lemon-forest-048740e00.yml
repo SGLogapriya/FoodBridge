@@ -36,7 +36,7 @@ jobs:
           action: "upload"
 
           app_location: "good-grub-connect-main/good-grub-connect-main"
-          output_location: "build"
+          output_location: "dist"
           api_location: ""
 
   close_pull_request_job:
