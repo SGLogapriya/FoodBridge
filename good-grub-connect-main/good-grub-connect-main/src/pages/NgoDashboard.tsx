@@ -8,16 +8,16 @@ import { motion } from "framer-motion";
 import API_BASE_URL from "@/config/api";
 
 const NgoDashboard = () => {
-  const [donations, setDonations] = useState([]);
+  const [donations, setDonations] = useState<any[]>([]);
 
   // fetch donations from backend
   const fetchDonations = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/donations`);
+      const res = await fetch(`${API_BASE_URL}/api/donations`);
       const data = await res.json();
       setDonations(data);
     } catch (error) {
-      console.error(error);
+      console.error("Fetch error:", error);
     }
   };
 
@@ -34,11 +34,11 @@ const NgoDashboard = () => {
 
       fetchDonations();
     } catch (error) {
-      console.error(error);
+      console.error("Accept error:", error);
     }
   };
 
-  // filter only available donations
+  // only available donations
   const available = donations.filter((d: any) => d.status === "available");
 
   return (
@@ -56,7 +56,7 @@ const NgoDashboard = () => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {available.map((d: any, i) => (
+          {available.map((d: any, i: number) => (
             <motion.div
               key={d._id}
               initial={{ opacity: 0, y: 15 }}
@@ -80,7 +80,7 @@ const NgoDashboard = () => {
               </p>
 
               <p className="text-sm text-muted-foreground mb-4">
-                {d.quantity}
+                Quantity: {d.quantity}
               </p>
 
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-5">

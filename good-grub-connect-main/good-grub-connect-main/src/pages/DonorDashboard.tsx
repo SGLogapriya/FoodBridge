@@ -13,9 +13,16 @@ const DonorDashboard = () => {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/donations`);
+        // 🔥 GET LOGGED-IN USER
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+        const res = await fetch(
+          `${API_BASE_URL}/api/donations?email=${user.email}`
+        );
+
         const data = await res.json();
         setDonations(data);
+
       } catch (err) {
         console.error("Error fetching donations:", err);
       }
@@ -24,7 +31,7 @@ const DonorDashboard = () => {
     fetchDonations();
   }, []);
 
-  // SAFE LOCATION FORMAT FUNCTION
+  // SAFE LOCATION FORMAT FUNCTION (UNCHANGED)
   const getLocationText = (location: any) => {
     if (!location) return "No location";
 
