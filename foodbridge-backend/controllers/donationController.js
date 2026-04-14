@@ -1,11 +1,13 @@
 const Donation = require("../models/Donation");
 
-// ✅ CREATE DONATION
+// ==============================
+// ✅ CREATE DONATION (UNCHANGED)
+// ==============================
 exports.createDonation = async (req, res) => {
   try {
     let { location } = req.body;
 
-    // 🔥 FORCE location to STRING
+    // 🔥 FORCE location to STRING (your existing logic)
     if (typeof location === "object") {
       if (Array.isArray(location)) {
         location = location.join(", ");
@@ -30,26 +32,46 @@ exports.createDonation = async (req, res) => {
   }
 };
 
-// ✅ GET ALL DONATIONS
+// ==============================
+// ✅ GET DONATIONS (FIXED + ENHANCED)
+// ==============================
 exports.getDonations = async (req, res) => {
   try {
-    const donations = await Donation.find();
+    const { email, status } = req.query;
+
+    let filter = {};
+
+    // 👤 Donor-specific filter
+    if (email) {
+      filter.email = email;
+    }
+
+    // 🏢 NGO filter
+    if (status) {
+      filter.status = status;
+    }
+
+    const donations = await Donation.find(filter);
 
     const formatted = donations.map(d => ({
       ...d._doc,
-      location: typeof d.location === "string"
-        ? d.location
-        : "Unknown"
+      location:
+        typeof d.location === "string"
+          ? d.location
+          : "Unknown"
     }));
 
     res.json(formatted);
 
   } catch (error) {
+    console.log(error);
     res.status(500).json({ msg: "Error fetching donations" });
   }
 };
 
-// ✅ ACCEPT DONATION
+// ==============================
+// ✅ ACCEPT DONATION (UNCHANGED)
+// ==============================
 exports.acceptDonation = async (req, res) => {
   try {
     const donation = await Donation.findByIdAndUpdate(
@@ -61,6 +83,7 @@ exports.acceptDonation = async (req, res) => {
     res.json(donation);
 
   } catch (error) {
+    console.log(error);
     res.status(500).json({ msg: "Error updating donation" });
   }
 };

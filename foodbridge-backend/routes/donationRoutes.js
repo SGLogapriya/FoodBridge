@@ -7,13 +7,13 @@ const {
   acceptDonation
 } = require("../controllers/donationController");
 
-// POST
+// CREATE donation
 router.post("/", createDonation);
 
-// GET
+// GET all donations
 router.get("/", getDonations);
 
-// PUT
+// ACCEPT donation
 router.put("/:id/accept", acceptDonation);
 
 module.exports = router;
