@@ -30,7 +30,10 @@ const donationSchema = new mongoose.Schema({
   },
 
   quantity: Number,
-  expiryTime: Number,
+  expiryTime: {
+  type: Date,
+  required: true
+  },
 
   address: {
     line1: String,
