@@ -16,7 +16,6 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
-<Route path="/" element={<LandingPage />} />
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,7 +28,7 @@ const App = () => (
         <Routes>
 
           {/* 🌐 PUBLIC ROUTES */}
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
