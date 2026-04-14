@@ -28,7 +28,7 @@ const NgoDashboard = () => {
   // accept donation
   const acceptDonation = async (id: string) => {
     try {
-      await fetch(`${API_BASE_URL}/donations/${id}/accept`, {
+      await fetch(`${API_BASE_URL}/api/donations/${id}/accept`, {
         method: "PUT",
       });
 

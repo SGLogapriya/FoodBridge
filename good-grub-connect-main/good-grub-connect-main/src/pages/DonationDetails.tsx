@@ -25,7 +25,7 @@ const DonationDetails = () => {
   useEffect(() => {
     const fetchDonation = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/donations`);
+        const res = await fetch(`${API_BASE_URL}/api/donations`);
         const data = await res.json();
 
         const found = data.find((d: any) => d._id === id);

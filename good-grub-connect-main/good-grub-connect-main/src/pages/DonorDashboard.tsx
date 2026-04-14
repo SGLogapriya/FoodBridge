@@ -13,7 +13,7 @@ const DonorDashboard = () => {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/donations`);
+        const res = await fetch(`${API_BASE_URL}/api/donations`);
         const data = await res.json();
         setDonations(data);
       } catch (err) {

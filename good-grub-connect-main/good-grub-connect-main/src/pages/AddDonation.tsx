@@ -185,7 +185,7 @@ const AddDonation = () => {
 
     // ✅ FIXED API CALL
     try {
-      const response = await fetch(`${API_BASE_URL}/donations`, {
+      const response = await fetch(`${API_BASE_URL}/api/donations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
