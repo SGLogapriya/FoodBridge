@@ -13,16 +13,15 @@ import NgoDashboard from "./pages/NgoDashboard";
 import DonationDetails from "./pages/DonationDetails";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
-
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import { AuthProvider } from "./context/AuthContext";
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
 
       <BrowserRouter>
         <Routes>

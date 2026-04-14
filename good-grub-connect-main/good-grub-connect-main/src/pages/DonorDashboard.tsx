@@ -5,18 +5,26 @@ import StatusBadge from "@/components/StatusBadge";
 import { useEffect, useState } from "react";
 import { Plus, Utensils, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import API_BASE_URL from "@/config/api";
 
 const DonorDashboard = () => {
   const [donations, setDonations] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/donations")
-      .then(res => res.json())
-      .then(data => setDonations(data))
-      .catch(err => console.error(err));
+    const fetchDonations = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/donations`);
+        const data = await res.json();
+        setDonations(data);
+      } catch (err) {
+        console.error("Error fetching donations:", err);
+      }
+    };
+
+    fetchDonations();
   }, []);
 
-  // 🔥 SAFE LOCATION FORMAT FUNCTION
+  // SAFE LOCATION FORMAT FUNCTION
   const getLocationText = (location: any) => {
     if (!location) return "No location";
 
@@ -82,7 +90,7 @@ const DonorDashboard = () => {
                 </div>
 
                 <p className="text-sm text-muted-foreground mb-4">
-                  {d.quantity}
+                  Quantity: {d.quantity}
                 </p>
 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">

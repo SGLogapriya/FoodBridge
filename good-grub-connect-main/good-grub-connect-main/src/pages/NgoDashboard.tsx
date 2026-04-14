@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Utensils, Clock, MapPin, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import API_BASE_URL from "@/config/api";
 
 const NgoDashboard = () => {
   const [donations, setDonations] = useState([]);
@@ -12,7 +13,7 @@ const NgoDashboard = () => {
   // fetch donations from backend
   const fetchDonations = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/donations");
+      const res = await fetch(`${API_BASE_URL}/donations`);
       const data = await res.json();
       setDonations(data);
     } catch (error) {
@@ -24,14 +25,13 @@ const NgoDashboard = () => {
     fetchDonations();
   }, []);
 
-  // ✅ THIS IS THE FUNCTION YOU ASKED ABOUT
+  // accept donation
   const acceptDonation = async (id: string) => {
     try {
-      await fetch(`http://localhost:5000/api/donations/${id}/accept`, {
+      await fetch(`${API_BASE_URL}/donations/${id}/accept`, {
         method: "PUT",
       });
 
-      // refresh donations after accepting
       fetchDonations();
     } catch (error) {
       console.error(error);

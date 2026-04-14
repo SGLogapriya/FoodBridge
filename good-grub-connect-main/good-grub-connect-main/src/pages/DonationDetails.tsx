@@ -5,7 +5,6 @@ import StatusBadge from "@/components/StatusBadge";
 import {
   ArrowLeft,
   Utensils,
-  Clock,
   MapPin,
   User,
   FileText,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import API_BASE_URL from "@/config/api";
 
 const steps = ["Available", "Accepted", "Completed"] as const;
 
@@ -21,14 +21,21 @@ const DonationDetails = () => {
   const [donation, setDonation] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState("");
 
-  // FETCH
+  // FETCH DONATION (FIXED FOR AZURE)
   useEffect(() => {
-    fetch(`http://localhost:5000/api/donations`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchDonation = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/donations`);
+        const data = await res.json();
+
         const found = data.find((d: any) => d._id === id);
-        setDonation(found);
-      });
+        setDonation(found || null);
+      } catch (error) {
+        console.error("Error fetching donation:", error);
+      }
+    };
+
+    fetchDonation();
   }, [id]);
 
   // TIMER
@@ -60,10 +67,16 @@ const DonationDetails = () => {
     return () => clearInterval(interval);
   }, [donation]);
 
-  if (!donation) return <div className="p-10 text-center">Loading...</div>;
+  if (!donation) {
+    return (
+      <div className="p-10 text-center text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
 
   const currentStep = steps.indexOf(
-    donation.status.charAt(0).toUpperCase() + donation.status.slice(1)
+    donation.status?.charAt(0).toUpperCase() + donation.status?.slice(1)
   );
 
   return (
@@ -73,13 +86,20 @@ const DonationDetails = () => {
       <div className="container max-w-3xl py-8 space-y-6">
 
         {/* BACK */}
-        <Link className="flex items-center gap-2 text-muted-foreground hover:text-foreground" to="/ngo">
+        <Link
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          to="/ngo"
+        >
           <ArrowLeft /> Back
         </Link>
 
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
 
-          {/* 🍱 HEADER */}
+          {/* HEADER */}
           <div className="bg-card p-6 rounded-xl border shadow flex justify-between">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -87,47 +107,57 @@ const DonationDetails = () => {
                 {donation.foodName}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                by {donation.donor || "Unknown"}
+                by {donation.donorName || "Unknown"}
               </p>
             </div>
 
             <div className="flex gap-2">
               <StatusBadge status={donation.status} />
-              <span className={`px-3 py-1 text-xs rounded-full font-medium
-                ${donation.priority === "high" ? "bg-red-100 text-red-600" :
-                  donation.priority === "medium" ? "bg-yellow-100 text-yellow-600" :
-                  "bg-gray-100 text-gray-600"}`}>
+              <span
+                className={`px-3 py-1 text-xs rounded-full font-medium
+                ${
+                  donation.priority === "high"
+                    ? "bg-red-100 text-red-600"
+                    : donation.priority === "medium"
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
                 {donation.priority}
               </span>
             </div>
           </div>
 
-          {/* ⏳ EXPIRY BIG */}
+          {/* TIMER */}
           <div className="bg-card p-6 rounded-xl border shadow text-center">
-            <p className="text-sm text-muted-foreground mb-2">Expiry Timer</p>
-
-            <p className={`text-3xl font-bold
-              ${timeLeft.includes("Expired") ? "text-red-500" :
-                timeLeft.includes("0h") ? "text-yellow-500" :
-                "text-green-600"}`}>
-              {timeLeft}
+            <p className="text-sm text-muted-foreground mb-2">
+              Expiry Timer
             </p>
 
-            {timeLeft.includes("0h") && !timeLeft.includes("Expired") && (
-              <p className="text-xs text-yellow-500 mt-2">
-                ⚠️ Expiring soon!
-              </p>
-            )}
+            <p
+              className={`text-3xl font-bold
+              ${
+                timeLeft.includes("Expired")
+                  ? "text-red-500"
+                  : timeLeft.includes("0h")
+                  ? "text-yellow-500"
+                  : "text-green-600"
+              }`}
+            >
+              {timeLeft}
+            </p>
           </div>
 
-          {/* 📦 DETAILS */}
+          {/* DETAILS */}
           <div className="grid sm:grid-cols-2 gap-4">
 
             <div className="bg-secondary/40 p-4 rounded-lg border flex gap-3">
               <MapPin className="text-primary" />
               <div>
                 <p className="text-xs text-muted-foreground">Location</p>
-                <p className="font-medium">{donation.location || "No location"}</p>
+                <p className="font-medium">
+                  {donation.address?.district || "No location"}
+                </p>
               </div>
             </div>
 
@@ -142,14 +172,18 @@ const DonationDetails = () => {
             <div className="bg-secondary/40 p-4 rounded-lg border flex gap-3 col-span-2">
               <FileText className="text-primary" />
               <div>
-                <p className="text-xs text-muted-foreground">Description</p>
-                <p className="font-medium">{donation.description || "No description"}</p>
+                <p className="text-xs text-muted-foreground">
+                  Description
+                </p>
+                <p className="font-medium">
+                  {donation.description || "No description"}
+                </p>
               </div>
             </div>
 
           </div>
 
-          {/* 📊 TIMELINE */}
+          {/* TIMELINE */}
           <div className="bg-card p-6 rounded-xl border shadow">
             <h3 className="font-semibold mb-4">Status Timeline</h3>
 
@@ -157,12 +191,25 @@ const DonationDetails = () => {
               {steps.map((step, i) => (
                 <div key={step} className="flex items-center flex-1">
                   <div className="flex flex-col items-center flex-1">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center
-                      ${i <= currentStep ? "bg-primary text-white" : "bg-muted"}`}>
-                      {i <= currentStep ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center
+                      ${
+                        i <= currentStep
+                          ? "bg-primary text-white"
+                          : "bg-muted"
+                      }`}
+                    >
+                      {i <= currentStep ? (
+                        <CheckCircle2 className="h-5 w-5" />
+                      ) : (
+                        i + 1
+                      )}
                     </div>
                     <span className="text-xs mt-2">{step}</span>
                   </div>
+                  {i < steps.length - 1 && (
+                    <div className="h-1 flex-1 bg-muted mx-2" />
+                  )}
                 </div>
               ))}
             </div>

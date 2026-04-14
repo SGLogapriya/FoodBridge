@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import API_BASE_URL from "@/config/api";
 
 // MAP
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -73,7 +73,7 @@ const AddDonation = () => {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  // CONVERT HH:MM:SS → seconds
+  // EXPIRY TIME CONVERT
   const handleExpiryChange = (value: string) => {
     setExpiryInput(value);
 
@@ -87,6 +87,7 @@ const AddDonation = () => {
 
   const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
+  // PINCODE API
   const handlePincode = async (pincode: string) => {
     setFormData({ ...formData, pincode });
 
@@ -97,11 +98,11 @@ const AddDonation = () => {
       if (data[0].Status === "Success") {
         const po = data[0].PostOffice[0];
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           pincode,
           district: po.District,
-          state: po.State
+          state: po.State,
         }));
       } else {
         alert("Invalid Pincode");
@@ -109,19 +110,20 @@ const AddDonation = () => {
     }
   };
 
+  // MAP CLICK
   const LocationPicker = () => {
     useMapEvents({
       click(e) {
         setCoords({
           lat: e.latlng.lat,
-          lng: e.latlng.lng
+          lng: e.latlng.lng,
         });
-      }
+      },
     });
     return null;
   };
 
-  // 🔥 FINAL SUBMIT FIX
+  // SUBMIT
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -140,7 +142,6 @@ const AddDonation = () => {
       return;
     }
 
-    // 🔥 MAIN FIX
     const expiryDate = new Date(Date.now() + timeLeft * 1000);
 
     const data = {
@@ -150,7 +151,7 @@ const AddDonation = () => {
         ? {
             donorName: formData.donorName,
             phone: formData.phone,
-            email: formData.email
+            email: formData.email,
           }
         : {
             organization: {
@@ -160,14 +161,13 @@ const AddDonation = () => {
               representative: {
                 name: formData.repName,
                 phone: formData.repPhone,
-                email: formData.repEmail
-              }
-            }
+                email: formData.repEmail,
+              },
+            },
           }),
 
       foodName: formData.foodName,
       quantity,
-
       expiryTime: expiryDate.toISOString(),
 
       address: {
@@ -176,25 +176,66 @@ const AddDonation = () => {
         district: formData.district,
         state: formData.state,
         country: "India",
-        pincode: formData.pincode
+        pincode: formData.pincode,
       },
 
       location: coords,
-      description: formData.description
+      description: formData.description,
     };
 
-    await fetch("http://localhost:5000/api/donations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
+    // ✅ FIXED API CALL
+    try {
+      const response = await fetch(`${API_BASE_URL}/donations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    toast({
-      title: "Donation Added!",
-      description: "Success 🎉"
-    });
+      if (!response.ok) {
+        throw new Error("Failed to add donation");
+      }
+
+      toast({
+        title: "Donation Added!",
+        description: "Success 🎉",
+      });
+
+      // RESET FORM (optional but good UX)
+      setFormData({
+        donorName: "",
+        phone: "",
+        email: "",
+        orgName: "",
+        orgPhone: "",
+        orgEmail: "",
+        repName: "",
+        repPhone: "",
+        repEmail: "",
+        foodName: "",
+        address1: "",
+        address2: "",
+        pincode: "",
+        district: "",
+        state: "",
+        description: "",
+      });
+
+      setCoords({ lat: null, lng: null });
+      setQuantity(1);
+      setExpiryInput("");
+      setTimeLeft(0);
+
+    } catch (error) {
+      console.error(error);
+
+      toast({
+        title: "Error",
+        description: "Failed to add donation",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -216,7 +257,6 @@ const AddDonation = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* INDIVIDUAL */}
             {donorType === "individual" ? (
               <>
                 <Input placeholder="Full Name"
@@ -228,47 +268,18 @@ const AddDonation = () => {
               </>
             ) : (
               <>
-                <div className="space-y-6">
-
-  {/* 🏢 ORGANIZATION SECTION */}
-  <div className="bg-secondary/40 p-4 rounded-lg border">
-    <h2 className="font-semibold mb-3 text-foreground">🏢 Organization Details</h2>
-
-    <div className="space-y-3">
-      <Input placeholder="Organization Name"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, orgName: e.target.value })} />
-
-      <Input placeholder="Organization Phone"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, orgPhone: e.target.value })} />
-
-      <Input placeholder="Organization Email"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, orgEmail: e.target.value })} />
-    </div>
-  </div>
-
-  {/* 👤 REPRESENTATIVE SECTION */}
-  <div className="bg-secondary/40 p-4 rounded-lg border">
-    <h2 className="font-semibold mb-3 text-foreground">👤 Representative Details</h2>
-
-    <div className="space-y-3">
-      <Input placeholder="Representative Name"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, repName: e.target.value })} />
-
-      <Input placeholder="Representative Phone"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, repPhone: e.target.value })} />
-
-      <Input placeholder="Representative Email"
-        className="focus:ring-2 focus:ring-primary"
-        onChange={(e) => setFormData({ ...formData, repEmail: e.target.value })} />
-    </div>
-  </div>
-
-</div>
+                <Input placeholder="Organization Name"
+                  onChange={(e) => setFormData({ ...formData, orgName: e.target.value })} />
+                <Input placeholder="Organization Phone"
+                  onChange={(e) => setFormData({ ...formData, orgPhone: e.target.value })} />
+                <Input placeholder="Organization Email"
+                  onChange={(e) => setFormData({ ...formData, orgEmail: e.target.value })} />
+                <Input placeholder="Representative Name"
+                  onChange={(e) => setFormData({ ...formData, repName: e.target.value })} />
+                <Input placeholder="Representative Phone"
+                  onChange={(e) => setFormData({ ...formData, repPhone: e.target.value })} />
+                <Input placeholder="Representative Email"
+                  onChange={(e) => setFormData({ ...formData, repEmail: e.target.value })} />
               </>
             )}
 
@@ -291,7 +302,6 @@ const AddDonation = () => {
 
             <Input placeholder="Address Line 1"
               onChange={(e) => setFormData({ ...formData, address1: e.target.value })} />
-
             <Input placeholder="Address Line 2"
               onChange={(e) => setFormData({ ...formData, address2: e.target.value })} />
 

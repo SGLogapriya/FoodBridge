@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
+import API_BASE_URL from "@/config/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,17 +14,15 @@ const Login = () => {
 
     const form = e.target;
 
-    // 🔥 get intended route (from Index.tsx)
     const redirectPath = localStorage.getItem("redirectAfterLogin");
 
-    // 🔥 decide expected role
     let expectedRole: "donor" | "ngo" | null = null;
 
     if (redirectPath === "/donor") expectedRole = "donor";
     if (redirectPath === "/ngo") expectedRole = "ngo";
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,7 +30,7 @@ const Login = () => {
         body: JSON.stringify({
           email: form.email.value,
           password: form.password.value,
-          role: expectedRole, // 🔥 send role to backend
+          role: expectedRole,
         }),
       });
 
@@ -39,7 +38,6 @@ const Login = () => {
 
       console.log("LOGIN RESPONSE:", result);
 
-      // ❌ backend error (wrong password / wrong role)
       if (!res.ok) {
         alert(result.msg || "Login failed");
         return;
@@ -52,15 +50,12 @@ const Login = () => {
 
       const user = result.user;
 
-      // ✅ store user
       localStorage.setItem("user", JSON.stringify(user));
 
-      // 🔥 SMART REDIRECTION
       if (redirectPath) {
         navigate(redirectPath);
         localStorage.removeItem("redirectAfterLogin");
       } else {
-        // fallback
         navigate(user.role === "donor" ? "/donor" : "/ngo");
       }
 
@@ -77,7 +72,6 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        {/* HEADER */}
         <div className="text-center mb-6">
           <Link
             to="/"
@@ -91,7 +85,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* FORM */}
         <div className="bg-card border border-border rounded-xl p-6 shadow">
           <form onSubmit={handleLogin} className="space-y-5">
 
