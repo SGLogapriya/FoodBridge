@@ -21,7 +21,10 @@ const DonationDetails = () => {
   const [donation, setDonation] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState("");
 
-  // FETCH DONATION (FIXED FOR AZURE)
+  // ✅ ADD USER (ROLE CHECK)
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // FETCH DONATION
   useEffect(() => {
     const fetchDonation = async () => {
       try {
@@ -66,6 +69,20 @@ const DonationDetails = () => {
 
     return () => clearInterval(interval);
   }, [donation]);
+
+  // ✅ ACCEPT DONATION FUNCTION
+  const acceptDonation = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/donations/${id}/accept`, {
+        method: "PUT",
+      });
+
+      // refresh page
+      window.location.reload();
+    } catch (error) {
+      console.error("Error accepting donation:", error);
+    }
+  };
 
   if (!donation) {
     return (
@@ -113,18 +130,6 @@ const DonationDetails = () => {
 
             <div className="flex gap-2">
               <StatusBadge status={donation.status} />
-              <span
-                className={`px-3 py-1 text-xs rounded-full font-medium
-                ${
-                  donation.priority === "high"
-                    ? "bg-red-100 text-red-600"
-                    : donation.priority === "medium"
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                {donation.priority}
-              </span>
             </div>
           </div>
 
@@ -207,17 +212,16 @@ const DonationDetails = () => {
                     </div>
                     <span className="text-xs mt-2">{step}</span>
                   </div>
-                  {i < steps.length - 1 && (
-                    <div className="h-1 flex-1 bg-muted mx-2" />
-                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* BUTTON */}
-          {donation.status === "available" && (
-            <Button className="w-full">Accept Donation</Button>
+          {/* ✅ ROLE BASED BUTTON FIX */}
+          {donation.status === "available" && user.role === "ngo" && (
+            <Button className="w-full" onClick={acceptDonation}>
+              Accept Donation
+            </Button>
           )}
 
         </motion.div>
