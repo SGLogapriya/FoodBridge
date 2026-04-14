@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Foodbridge-backend
+          cd foodbridge-backend
           npm install
 
       - name: Upload artifact
