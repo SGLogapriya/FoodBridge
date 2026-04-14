@@ -15,6 +15,8 @@ import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import LandingPage from "./pages/LandingPage";
+<Route path="/" element={<LandingPage />} />
 const queryClient = new QueryClient();
 
 const App = () => (

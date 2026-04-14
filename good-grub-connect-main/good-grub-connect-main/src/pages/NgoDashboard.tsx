@@ -39,8 +39,9 @@ const NgoDashboard = () => {
   };
 
   // only available donations
-  const available = donations.filter((d: any) => d.status === "available");
-
+const available = donations.filter(
+  (d: any) => d.status === "available" || d.status === "accepted"
+);
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -103,13 +104,14 @@ const NgoDashboard = () => {
                 </Link>
 
                 <Button
-                  variant="accent"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => acceptDonation(d._id)}
-                >
-                  Accept
-                </Button>
+  variant="accent"
+  size="sm"
+  className="flex-1"
+  disabled={d.status === "accepted"}
+  onClick={() => acceptDonation(d._id)}
+>
+  {d.status === "accepted" ? "Accepted" : "Accept"}
+</Button>
               </div>
             </motion.div>
           ))}
